@@ -1,8 +1,10 @@
-// Captures the three Token Radar dashboard screenshots into screenshots/ using headless Chromium.
-// Plain Node 22 with standard library only.
+// Captures the three Token Radar dashboard screenshots into screenshots/ using headless Chromium
+// driven over the DevTools protocol (the VM's Chromium build requires its WebGL domain-policy
+// switches at startup and no-ops the plain --screenshot mode). Plain Node 22+ standard library only.
 
-import { spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync } from 'node:fs';
+import { spawn, spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -35,6 +37,79 @@ function parsePngDimensions(buf) {
     width: buf.readUInt32BE(16),
     height: buf.readUInt32BE(20),
   };
+}
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+/** Minimal CDP client over the browser WebSocket (flatten session mode). */
+class Cdp {
+  constructor(ws) {
+    this.ws = ws;
+    this.nextId = 1;
+    this.pending = new Map();
+    this.listeners = [];
+    ws.addEventListener('message', (ev) => {
+      const msg = JSON.parse(ev.data);
+      if (msg.id !== undefined && this.pending.has(msg.id)) {
+        const { resolve: res, reject: rej } = this.pending.get(msg.id);
+        this.pending.delete(msg.id);
+        if (msg.error) rej(new Error(`CDP error: ${msg.error.message}`));
+        else res(msg.result);
+      } else if (msg.method) {
+        for (const fn of this.listeners) fn(msg);
+      }
+    });
+  }
+
+  send(method, params = {}, sessionId = undefined) {
+    const id = this.nextId++;
+    const payload = { id, method, params };
+    if (sessionId) payload.sessionId = sessionId;
+    return new Promise((res, rej) => {
+      this.pending.set(id, { resolve: res, reject: rej });
+      this.ws.send(JSON.stringify(payload));
+    });
+  }
+
+  onEvent(fn) {
+    this.listeners.push(fn);
+  }
+}
+
+async function connectCdp(port) {
+  const res = await fetch(`http://127.0.0.1:${port}/json/version`);
+  const info = await res.json();
+  const ws = new WebSocket(info.webSocketDebuggerUrl);
+  await new Promise((res2, rej) => {
+    ws.addEventListener('open', res2, { once: true });
+    ws.addEventListener('error', rej, { once: true });
+  });
+  return new Cdp(ws);
+}
+
+async function capturePage(cdp, url, width, height) {
+  const { targetId } = await cdp.send('Target.createTarget', { url: 'about:blank' });
+  const { sessionId } = await cdp.send('Target.attachToTarget', { targetId, flatten: true });
+  try {
+    await cdp.send('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: 1, mobile: false }, sessionId);
+    await cdp.send('Page.enable', {}, sessionId);
+    const loaded = new Promise((res) => {
+      const timer = setTimeout(res, 9000);
+      cdp.onEvent((msg) => {
+        if (msg.sessionId === sessionId && msg.method === 'Page.loadEventFired') {
+          clearTimeout(timer);
+          res();
+        }
+      });
+    });
+    await cdp.send('Page.navigate', { url }, sessionId);
+    await loaded;
+    await sleep(700);
+    const shot = await cdp.send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false }, sessionId);
+    return Buffer.from(shot.data, 'base64');
+  } finally {
+    await cdp.send('Target.closeTarget', { targetId }).catch(() => {});
+  }
 }
 
 const inputArg = readArg('input', existsSync('/input/snapshot.json') ? '/input/snapshot.json' : DEFAULT_INPUT);
@@ -80,36 +155,52 @@ mkdirSync(shotsDir, { recursive: true });
 const baseUrl = pathToFileURL(indexPath).href;
 
 const targets = [
-  { name: '1-board.png', url: baseUrl },
-  { name: '2-detail.png', url: `${baseUrl}#p=${encodeURIComponent(wlRow.slug)}` },
-  { name: '3-filtered.png', url: `${baseUrl}#cat=${encodeURIComponent(chosenCat)}` },
+  { name: '1-board.png', url: baseUrl, width: 1440, height: 1440 },
+  { name: '2-detail.png', url: `${baseUrl}#p=${encodeURIComponent(wlRow.slug)}`, width: 1440, height: 900 },
+  { name: '3-filtered.png', url: `${baseUrl}#cat=${encodeURIComponent(chosenCat)}`, width: 1440, height: 900 },
 ];
 
-// 3. Render screenshots via headless Chromium.
+// 3. Launch Chromium with its required WebGL domain policy and capture over CDP.
 const profileDir = mkdtempSync(join(tmpdir(), 'token-radar-chrome-'));
+const policyPath = join(profileDir, 'webgl-domains.txt');
+writeFileSync(policyPath, 'hatch-webgl-all-origins-v1\n');
+const policySha = createHash('sha256').update(readFileSync(policyPath)).digest('hex');
+
+const chrome = spawn(CHROME_BIN, [
+  '--headless=new',
+  '--disable-gpu',
+  '--no-sandbox',
+  '--hide-scrollbars',
+  `--hatch-webgl-allowed-domains-file=${policyPath}`,
+  `--hatch-webgl-allowed-domains-sha256=${policySha}`,
+  `--user-data-dir=${profileDir}`,
+  '--remote-debugging-port=0',
+  'about:blank',
+], { stdio: ['ignore', 'pipe', 'pipe'] });
+
 try {
+  // DevToolsActivePort is written into the profile dir once the browser is up.
+  const portFile = join(profileDir, 'DevToolsActivePort');
+  let port = 0;
+  for (let i = 0; i < 100 && port === 0; i++) {
+    if (existsSync(portFile)) {
+      port = parseInt(readFileSync(portFile, 'utf8').split('\n')[0], 10) || 0;
+    }
+    if (port === 0) await sleep(150);
+  }
+  if (port === 0) throw new Error('Chromium did not publish a DevTools port');
+
+  const cdp = await connectCdp(port);
   for (const t of targets) {
     const outFile = join(shotsDir, t.name);
-    const args = [
-      '--headless=new',
-      '--disable-gpu',
-      '--no-sandbox',
-      '--hide-scrollbars',
-      '--window-size=1440,900',
-      '--virtual-time-budget=8000',
-      `--user-data-dir=${profileDir}`,
-      `--screenshot=${outFile}`,
-      t.url,
-    ];
-    const res = spawnSync(CHROME_BIN, args, { encoding: 'utf8' });
-    if (res.status !== 0 || !existsSync(outFile)) {
-      process.stderr.write(res.stderr || res.stdout || '');
-      throw new Error(`Chromium failed for ${t.name} (status=${res.status})`);
-    }
+    const png = await capturePage(cdp, t.url, t.width, t.height);
+    writeFileSync(outFile, png);
     const size = statSync(outFile).size;
-    const { width, height } = parsePngDimensions(readFileSync(outFile));
+    const { width, height } = parsePngDimensions(png);
     process.stdout.write(`screenshots/${t.name}: ${size} bytes, ${width}x${height} (${t.url})\n`);
   }
+  cdp.ws.close();
 } finally {
+  chrome.kill('SIGKILL');
   rmSync(profileDir, { recursive: true, force: true });
 }
