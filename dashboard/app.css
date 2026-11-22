@@ -1801,3 +1801,427 @@ ol.farm-steps > li::before {
     grid-template-columns: 1fr;
   }
 }
+
+/* ==========================================================================
+   radar-3: formula panel, accounting bar, evidence panel, odds & verdicts
+   ========================================================================== */
+.stat-value {
+  font-size: 14.5px;
+  overflow-wrap: anywhere;
+}
+
+.stat-label,
+.stat-sub {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+table.evidence-table {
+  table-layout: fixed;
+}
+
+table.evidence-table td {
+  overflow-wrap: anywhere;
+}
+
+table.evidence-table td.cat-name {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+/* Cover density: tighten the panels above the board so the first screenshot
+   packs the KPI strip, accounting, evidence and 10+ board rows. */
+.radar-header {
+  padding: 10px 14px;
+  gap: 9px;
+  margin-bottom: 9px;
+}
+
+.stat-chip {
+  padding: 6px 9px;
+}
+
+.formula-panel {
+  padding: 7px 12px;
+  margin-bottom: 9px;
+}
+
+.acct-panel {
+  padding: 8px 12px 9px;
+  margin-bottom: 9px;
+}
+
+.evidence-panel {
+  padding: 9px 12px;
+  margin-bottom: 9px;
+}
+
+.evidence-head {
+  margin-bottom: 7px;
+}
+
+table.evidence-table td,
+table.evidence-table th {
+  padding: 2px 6px;
+}
+
+.radar-table tbody td {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+.radar-table thead th {
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
+.workspace-bar {
+  margin-bottom: 0;
+}
+
+.tab-bar {
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+.toolbar {
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+table.evidence-table .status-chip {
+  white-space: normal;
+  text-align: center;
+  line-height: 1.25;
+}
+
+.formula-panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow-panel);
+}
+
+.formula-panel .formula-line {
+  margin: 0;
+  padding: 0;
+  background: none;
+  border: none;
+}
+
+.acct-panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 10px 14px 12px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow-panel);
+}
+
+.acct-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.acct-title {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--text-bright);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.acct-caption {
+  color: var(--muted);
+  font-size: 11.5px;
+}
+
+.acct-bar {
+  display: flex;
+  height: 16px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid var(--line-strong);
+}
+
+.acct-seg {
+  height: 100%;
+  min-width: 2px;
+}
+
+.acct-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin-top: 8px;
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
+.acct-legend strong {
+  color: var(--text-bright);
+  font-family: var(--font-mono);
+}
+
+.acct-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  margin-right: 5px;
+}
+
+.integrity-line {
+  margin-top: 9px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line-hairline);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--accent);
+  overflow-wrap: anywhere;
+}
+
+.evidence-panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow-panel);
+}
+
+.evidence-head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 10px;
+}
+
+.evidence-heading {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--text-bright);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.evidence-grid {
+  display: grid;
+  grid-template-columns: 1.25fr 1.25fr 1fr;
+  gap: 16px;
+}
+
+.evidence-col {
+  min-width: 0;
+}
+
+.evidence-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-bright);
+  margin-bottom: 6px;
+}
+
+table.evidence-table {
+  width: 100%;
+  margin-bottom: 6px;
+}
+
+table.evidence-table td,
+table.evidence-table th {
+  padding: 3px 6px;
+  font-size: 11.5px;
+}
+
+.status-chip {
+  display: inline-block;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 700;
+  white-space: nowrap;
+  border: 1px solid var(--line-strong);
+  color: var(--muted);
+}
+
+.status-chip.kept {
+  color: var(--pos);
+  border-color: var(--pos-border);
+  background: var(--pos-soft);
+}
+
+.status-chip.baseline {
+  color: var(--text-bright);
+  border-color: var(--line-strong);
+}
+
+.status-chip.control {
+  color: var(--amber);
+  border-color: var(--amber-border);
+  background: var(--amber-soft);
+}
+
+.status-chip.rejected {
+  color: var(--dim);
+}
+
+.honesty-note {
+  color: var(--text);
+}
+
+.scenario-line {
+  padding: 8px 12px;
+  font-size: 11.5px;
+  color: var(--muted);
+  border-bottom: 1px solid var(--line-hairline);
+  overflow-wrap: anywhere;
+}
+
+.scenario-line strong {
+  color: var(--text-bright);
+}
+
+.verdict-chips {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.verdict-filter-chip {
+  padding: 4px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  background: var(--bg);
+  color: var(--muted);
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.verdict-filter-chip:hover {
+  color: var(--text-bright);
+}
+
+.verdict-filter-chip.active {
+  color: var(--accent);
+  border-color: var(--accent-border);
+  background: var(--accent-soft);
+}
+
+.verdict-chip {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  border: 1px solid var(--line-strong);
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.verdict-chip.farm {
+  color: var(--pos);
+  border-color: var(--pos-border);
+  background: var(--pos-soft);
+}
+
+.verdict-chip.marginal {
+  color: var(--amber);
+  border-color: var(--amber-border);
+  background: var(--amber-soft);
+}
+
+.verdict-chip.skip {
+  color: var(--dim);
+}
+
+.odds-cell {
+  min-width: 110px;
+}
+
+.odds-wrap {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.odds-bar {
+  flex: 1;
+  height: 7px;
+  min-width: 52px;
+  background: var(--bg-sunken);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.odds-bar > span {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+}
+
+.odds-pct {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-bright);
+  min-width: 34px;
+  text-align: right;
+}
+
+td.range-cell {
+  color: var(--muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.implied-val {
+  font-weight: 700;
+  color: var(--text-bright);
+}
+
+.implied-sub {
+  display: block;
+  font-size: 10.5px;
+  color: var(--dim);
+  font-family: var(--font-mono);
+  white-space: nowrap;
+}
+
+.net-val {
+  font-weight: 700;
+}
+
+.cat-details {
+  margin-top: 12px;
+}
+
+.odds-drivers {
+  margin-top: 10px;
+  border-top: 1px dashed var(--line);
+  padding-top: 6px;
+}
+
+.factor-row.driver-head .factor-name {
+  font-weight: 700;
+  color: var(--text-bright);
+}
+
+body.drawer-open table.evidence-table th,
+body.drawer-open table.evidence-table td {
+  font-size: 10.5px;
+  letter-spacing: 0;
+}
+
+@media (max-width: 1100px) {
+  .evidence-grid {
+    grid-template-columns: 1fr;
+  }
+}
