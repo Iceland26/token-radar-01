@@ -1,5 +1,9 @@
 # Token Radar (`radar-3`)
 
+[![make.fun · token-radar-01](https://make.fun/badge/token-radar-01.svg)](https://make.fun/bounty/token-radar-01?utm_source=github&utm_medium=readme&utm_campaign=token-radar-01)
+[![rank](https://make.fun/badge/token-radar-01/Iceland26/token-radar-01/rank.svg)](https://make.fun/bounty/token-radar-01/leaderboard?utm_source=github&utm_medium=readme&utm_campaign=token-radar-01)
+[![reward](https://make.fun/badge/token-radar-01/Iceland26/token-radar-01/reward.svg)](https://make.fun/bounty/token-radar-01?utm_source=github&utm_medium=readme&utm_campaign=token-radar-01)
+
 **Proposed submission title:** Token Radar: every value term fitted on the traded peers and graded leave-one-out and walk-forward, token odds from the peers' record, a costed farm plan and verdict for every protocol — all 758 protocols accounted for
 
 Token Radar reads a sealed DefiLlama protocol snapshot (`snapshot.json`), identifies every protocol that records no token yet, ranks eligible protocols by their implied launch value, and produces a concrete 6-step farm plan for each. Unlike a hand-tuned scoring rule, radar-3 **fits** both of its models on the snapshot's own traded peers and **grades every term out-of-sample** before the term is allowed into the model. The dashboard cover prints the grades, the range calibration, the full accounting of all protocols in the snapshot, and an integrity seal over `board.json`.
