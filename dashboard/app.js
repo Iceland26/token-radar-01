@@ -397,7 +397,7 @@
     el('strong', null, 'Standard: '),
     'deposit = ' + ((SC.deposit_pct_of_tvl || 0.0002) * 100) + '% of TVL (min $' + fmtInt(SC.deposit_min_usd) +
     ', max $' + fmtInt(SC.deposit_max_usd) + ') \u00b7 drop pool = ' + Math.round((SC.drop_pool_pct_of_value || 0.07) * 100) +
-    '% of value-if-it-launches \u00b7 your share = deposit \u00f7 (TVL + deposit) \u00b7 time at $' + fmtInt(SC.hourly_rate_usd) +
+    '% of value-if-it-launches \u00b7 your share = deposit \u00f7 (deposit + farmer capital of 5\u00d7 the drop pool) \u00b7 time at $' + fmtInt(SC.hourly_rate_usd) +
     '/h \u00b7 idle cash at a ' + Math.round((SC.tbill_rate || 0.05) * 100) + '% T-bill over ' + fmtInt(SC.horizon_weeks) + ' weeks \u00b7 fees = the farm steps\u2019 gas midpoints'
   );
 

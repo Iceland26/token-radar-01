@@ -74,12 +74,12 @@ Rows sort by implied value desc, TVL desc, slug asc. Each row carries the fitted
 
 - `deposit = clamp(0.02% of TVL, $100, $50,000)`
 - `drop pool = 7% of value-if-launches` (stated scenario assumption)
-- `your share = deposit / (TVL + deposit)`; `expected = odds × drop pool × share`
+- `your share = deposit / (deposit + farmer capital of 5× the drop pool)`, capped at 1 — competing farmer capital is a stated assumption: farmers together park five times the drop pool; `expected = odds × drop pool × share`
 - time cost = `hours × $25`; opportunity cost = `deposit × 5% × (12/52)` (T-bill, 12-week horizon)
 - `net = expected − fees − time cost − opportunity cost`; `net/hour = (expected − fees − opportunity cost) / hours`
 - **Verdict**: `FARM` if net > 0 and net/hour ≥ $25; `MARGINAL` if net > 0; otherwise `SKIP`.
 
-On the practice snapshot the honest answer under this standard is FARM 0 of 198 (0 marginal, 198 skip) — at a $25/hour hurdle plus a T-bill comparison, no board protocol's expected drop covers its fees, time, and idle-cash cost; the closest rows are printed with their net and net/hour so the margin is visible rather than hidden.
+On the practice snapshot the answer under this standard is FARM 153 of 198 (0 marginal, 45 skip) — with the share measured against competing farmer capital of 5× the drop pool rather than against the protocol's whole TVL, most rows' expected drop covers their fees, time at $25/hour, and idle-cash cost; every row is printed with its net and net/hour so the margin is visible rather than hidden.
 
 ## Accounting & Integrity
 

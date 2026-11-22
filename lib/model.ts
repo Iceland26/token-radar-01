@@ -1585,7 +1585,11 @@ export function buildRadar(
 
     const deposit = clamp(SCENARIO.deposit_pct_of_tvl * p.tvl_usd, SCENARIO.deposit_min_usd, SCENARIO.deposit_max_usd);
     const dropPool = SCENARIO.drop_pool_pct_of_value * valueIf;
-    const share = deposit / (p.tvl_usd + deposit);
+    // Share model: competing farmer capital is a stated assumption of 5x the drop pool
+    // (farmers together park five times the pool), so your share is
+    // deposit / (deposit + farmer capital of 5x the drop pool), capped at 1.
+    const competingFarmerCapital = 5 * dropPool;
+    const share = Math.min(1, deposit / (deposit + competingFarmerCapital));
     const expected = odds * dropPool * share;
     const timeCost = hours * SCENARIO.hourly_rate_usd;
     const oppCost = deposit * SCENARIO.tbill_rate * (SCENARIO.horizon_weeks / 52);
