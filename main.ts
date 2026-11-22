@@ -1,7 +1,8 @@
 // Token Radar entry point (Node 22, standard library only, deterministic output).
-// Reads the sealed DefiLlama snapshot, scores pre-token protocols with radar-2 (lib/model.ts),
+// Reads the sealed DefiLlama snapshot, scores pre-token protocols with radar-3 (lib/model.ts),
 // writes board.json and data.js, copies dashboard/ and screenshots/, and writes dossier.json.
 
+import { createHash } from 'node:crypto';
 import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -62,7 +63,10 @@ if (issue !== null) {
 }
 
 mkdirSync(outDir, { recursive: true });
-writeFileSync(join(outDir, 'board.json'), `${JSON.stringify({ rows: board })}\n`);
+const boardBytes = `${JSON.stringify({ rows: board })}\n`;
+writeFileSync(join(outDir, 'board.json'), boardBytes);
+// Integrity seal: first 8 hex of the sha256 of the exact board.json bytes, printed on the cover.
+radar.seal = createHash('sha256').update(boardBytes, 'utf8').digest('hex').slice(0, 8);
 writeFileSync(join(outDir, 'data.js'), dataScript(radar));
 
 const top3 = board
